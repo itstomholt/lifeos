@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life OS — Basic Living</title>
+<style>
+  /* ============ STYLE v3 CONSTANTS ============ */
+  :root{
+    --charcoal:#404040;
+    --midgray:#595959;
+    --notegray:#808080;
+    --bordergray:#D9D9D9;
+    --zebra:#F2F2F2;
+    --inputfill:#E6F0FA;
+    --bluein:#0000FF;
+    --green:#008000;
+    --red:#C00000;
+    --amber:#BF8F00;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:10pt;
+    color:#000;
+    background:#FFFFFF;
+    padding:16px 14px 70px;
+    max-width:760px;
+    margin:0 auto;
+  }
+  h1{font-size:13pt;font-weight:bold;color:var(--charcoal);}
+  .doc-sub{font-size:9pt;color:var(--notegray);font-style:italic;margin-top:2px;}
+  .doc-head{border-bottom:2px solid var(--midgray);padding-bottom:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;}
+  .sync-dot{font-size:9pt;white-space:nowrap;}
+
+  .zonetabs{display:flex;border-bottom:1px solid var(--bordergray);margin-bottom:16px;}
+  .zonetab{
+    padding:8px 14px;font-size:10pt;color:var(--notegray);cursor:pointer;
+    border-bottom:2px solid transparent;user-select:none;
+  }
+  .zonetab.sel{color:var(--charcoal);font-weight:bold;border-bottom:2px solid var(--midgray);}
+  .zone{display:none;}
+  .zone.show{display:block;}
+
+  h2{
+    font-size:10pt;font-weight:bold;color:var(--charcoal);
+    border-bottom:1px solid var(--midgray);
+    padding-bottom:3px;margin:18px 0 8px;
+  }
+  h2:first-child{margin-top:0;}
+  .guidance{font-size:9pt;color:var(--notegray);font-style:italic;margin:2px 0 8px;}
+
+  table{border-collapse:collapse;width:100%;}
+  th{
+    text-align:left;font-weight:bold;color:var(--charcoal);
+    border-bottom:1.5px solid var(--midgray);
+    padding:5px 8px 4px 0;font-size:10pt;
+  }
+  th.num, td.num{text-align:right;padding-right:0;}
+  td{border-bottom:1px solid var(--bordergray);padding:6px 8px 6px 0;vertical-align:middle;}
+
+  .calc{font-weight:bold;color:#000;}
+  .xref{color:var(--green);}
+  .flag-red{color:var(--red);font-weight:bold;}
+  .flag-amber{color:var(--amber);font-weight:bold;}
+  .ok-green{color:var(--green);}
+  .note{color:var(--notegray);font-size:9pt;}
+
+  input[type=text], input[type=password], textarea, select{
+    font-family:Arial, sans-serif;font-size:10pt;
+    color:var(--bluein);
+    background:var(--inputfill);
+    border:none;border-bottom:1px solid var(--bordergray);
+    padding:6px 8px;width:100%;outline:none;
+  }
+  textarea{min-height:56px;resize:vertical;}
+  input::placeholder, textarea::placeholder{color:var(--notegray);font-style:italic;font-size:9pt;}
+
+  button{
+    font-family:Arial, sans-serif;font-size:9pt;color:var(--charcoal);
+    background:#fff;border:1px solid var(--midgray);padding:6px 12px;cursor:pointer;
+  }
+  button:active{background:var(--zebra);}
+  button.primary{font-weight:bold;}
+  button:disabled{color:var(--bordergray);border-color:var(--bordergray);cursor:default;}
+
+  .row{display:flex;gap:8px;align-items:center;}
+  .row .grow{flex:1;}
+  .mt{margin-top:8px;}
+  .mb{margin-bottom:12px;}
+  .field{margin-bottom:8px;}
+  .field .note{display:block;margin-bottom:2px;}
+
+  .check{
+    width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:13px;color:var(--charcoal);flex-shrink:0;user-select:none;
+  }
+  .item-icon{
+    width:24px;text-align:center;cursor:pointer;font-size:12px;
+    color:var(--charcoal);flex-shrink:0;user-select:none;
+  }
+  .done .item-text{color:var(--notegray);text-decoration:line-through;}
+  .rm{color:var(--notegray);cursor:pointer;font-size:11px;padding:2px 6px;flex-shrink:0;user-select:none;}
+  .rm:active{color:var(--red);}
+  .item-text{flex:1;color:var(--bluein);}
+
+  .kpi-val{font-weight:bold;text-align:right;white-space:nowrap;}
+
+  .picker{
+    display:none;position:fixed;inset:0;background:rgba(64,64,64,0.35);
+    align-items:center;justify-content:center;z-index:10;padding:20px;
+  }
+  .picker.show{display:flex;}
+  .picker-box{background:#fff;border:1px solid var(--midgray);max-width:340px;width:100%;padding:14px;}
+  .glyph-grid{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+  .glyph{
+    width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--bordergray);cursor:pointer;font-size:15px;
+  }
+  .glyph:active{background:var(--zebra);}
+
+  .dayselect{display:flex;gap:6px;margin-bottom:10px;}
+  .dayopt{
+    padding:5px 10px;font-size:9pt;color:var(--notegray);
+    border-bottom:2px solid transparent;cursor:pointer;user-select:none;
+  }
+  .dayopt.sel{color:var(--bluein);background:var(--inputfill);font-weight:bold;}
+
+  .zebra-tbl tr:nth-child(even) td{background:var(--zebra);}
+  ol{margin:4px 0 8px 20px;font-size:9pt;color:var(--notegray);}
+  ol li{margin-bottom:3px;}
+  code{font-family:Consolas,Menlo,monospace;font-size:9pt;color:var(--charcoal);}
+
+  pre{
+    font-family:Consolas, Menlo, monospace;font-size:9pt;
+    border:1px solid var(--bordergray);padding:10px;
+    white-space:pre-wrap;background:#fff;margin:8px 0;
+  }
+  .toast{
+    position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+    background:var(--charcoal);color:#fff;font-size:9pt;
+    padding:8px 14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;
+    max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="doc-head">
+  <div>
+    <h1>Life OS — Basic Living</h1>
+    <div class="doc-sub">MOD-01 · Style v3 · <span id="hdrDate"></span></div>
+  </div>
+  <div class="sync-dot note" id="syncStatus">local only</div>
+</div>
+
+<div class="zonetabs">
+  <div class="zonetab sel" data-zone="read">Dashboard</div>
+  <div class="zonetab" data-zone="operate">Operate</div>
+  <div class="zonetab" data-zone="store">Store</div>
+</div>
+
+<!-- ================= READ ZONE ================= -->
+<div class="zone show" id="zone-read">
+  <h2>KPI Summary</h2>
+  <p class="guidance">Read-only rollup. Flags appear only on exceptions — no news is no ink.</p>
+  <table>
+    <tr><th>Indicator</th><th class="num">Value</th><th class="num" style="width:60px;">Flag</th></tr>
+    <tr><td>Routine completion — today (<span class="xref" id="kpiDayLabel"></span>)</td><td class="num kpi-val" id="kpiRoutine">—</td><td class="num" id="kpiRoutineFlag"></td></tr>
+    <tr><td>Routine completion — 7-day avg</td><td class="num kpi-val" id="kpiRoutine7">—</td><td class="num" id="kpiRoutine7Flag"></td></tr>
+    <tr><td>Open inbox items</td><td class="num kpi-val" id="kpiInbox">—</td><td class="num" id="kpiInboxFlag"></td></tr>
+    <tr><td>Days since last weekly review</td><td class="num kpi-val" id="kpiReview">—</td><td class="num" id="kpiReviewFlag"></td></tr>
+  </table>
+
+  <h2>Habit Ledger — Last 7 Days</h2>
+  <p class="guidance">Symbol per day: ● complete · ◐ partial · ○ none logged.</p>
+  <table>
+    <tr id="ledgerHead"><th>Day</th></tr>
+    <tr id="ledgerRow"><td class="note">Completion</td></tr>
+  </table>
+</div>
+
+<!-- ================= OPERATE ZONE ================= -->
+<div class="zone" id="zone-operate">
+  <h2>Daily Routine</h2>
+  <div class="dayselect" id="daySelect"></div>
+  <table><tbody id="routineBody"></tbody></table>
+  <div class="row mt">
+    <div class="grow"><input type="text" id="routineInput" placeholder="Add routine item…"></div>
+    <button id="routineAdd">Add</button>
+  </div>
+
+  <h2>Quick Capture</h2>
+  <table><tbody id="inboxBody"></tbody></table>
+  <div class="row mt">
+    <div class="grow"><input type="text" id="inboxInput" placeholder="Task, idea, note…"></div>
+    <button id="inboxAdd">Add</button>
+  </div>
+
+  <h2>Weekly Review</h2>
+  <p class="guidance">Saving stamps today's date; the dashboard tracks days since.</p>
+  <div class="mb"><span class="note">What worked</span><textarea id="revWorked"></textarea></div>
+  <div class="mb"><span class="note">What to adjust</span><textarea id="revAdjust"></textarea></div>
+  <div class="mb"><span class="note">Focus for next week</span><textarea id="revFocus"></textarea></div>
+  <button class="primary" id="saveReview">Save Review</button>
+</div>
+
+<!-- ================= STORE ZONE ================= -->
+<div class="zone" id="zone-store">
+
+  <h2>Vault Sync (GitHub)</h2>
+  <p class="guidance">Syncs two files to a repo: <code>life-os/state.json</code> (app source of truth) and <code>life-os/basic-living.md</code> (Obsidian-readable). Point Obsidian Git at the same repo and the vault stays current. Token is stored on this device only — never written to the repo.</p>
+  <div class="field"><span class="note">Repository (owner/name)</span><input type="text" id="ghRepo" placeholder="tomholt/vault"></div>
+  <div class="field"><span class="note">Branch</span><input type="text" id="ghBranch" placeholder="main"></div>
+  <div class="field"><span class="note">Folder in repo</span><input type="text" id="ghFolder" placeholder="life-os"></div>
+  <div class="field"><span class="note">Fine-grained personal access token</span><input type="password" id="ghToken" placeholder="github_pat_…"></div>
+  <div class="row">
+    <button class="primary" id="ghConnect">Connect &amp; Test</button>
+    <button id="ghSync">Sync Now</button>
+    <button id="ghPull">Pull Remote</button>
+  </div>
+  <p class="note mt" id="ghMsg"></p>
+
+  <h2>Sync Setup — One-Time</h2>
+  <ol>
+    <li>Create a <b>private</b> GitHub repo (or use your existing vault repo).</li>
+    <li>GitHub → Settings → Developer settings → Fine-grained tokens → Generate. Scope it to <b>only that repo</b>, permission: <b>Contents — Read and write</b>. Nothing else.</li>
+    <li>Paste repo, branch, folder, and token above → Connect &amp; Test.</li>
+    <li>In Obsidian, install the <b>Git</b> community plugin pointed at the same repo. The markdown file appears in your vault and updates on every sync.</li>
+    <li>Repeat step 3 on each device (phone, computer) with the same settings.</li>
+  </ol>
+  <p class="guidance">Sync model: newest wins by timestamp. The app pulls on open and pushes ~5 s after any change. Edits made to the markdown in Obsidian are for reading/archiving — the JSON is the app's source of truth.</p>
+
+  <h2>Symbol Library</h2>
+  <p class="guidance">Glyphs available in the icon picker. Edit the list (space-separated); emoji allowed.</p>
+  <input type="text" id="glyphLib">
+  <button class="mt" id="glyphSave">Save Library</button>
+
+  <h2>KPI Thresholds</h2>
+  <table class="zebra-tbl">
+    <tr><th>Indicator</th><th>Amber</th><th>Red</th></tr>
+    <tr><td>Routine completion</td><td>&lt; 80%</td><td>&lt; 50%</td></tr>
+    <tr><td>Open inbox items</td><td>&gt; 10</td><td>&gt; 20</td></tr>
+    <tr><td>Days since review</td><td>&gt; 7</td><td>&gt; 14</td></tr>
+  </table>
+
+  <h2>Format Guide</h2>
+  <table class="zebra-tbl">
+    <tr><th>Semantics</th><th>Meaning</th></tr>
+    <tr><td><span style="color:var(--bluein);background:var(--inputfill);padding:1px 6px;">blue on pale blue</span></td><td>User input — type here</td></tr>
+    <tr><td><span class="calc">bold black</span></td><td>Calculated result — do not type</td></tr>
+    <tr><td><span class="xref">green</span></td><td>Value referenced across modules / synced</td></tr>
+    <tr><td><span class="flag-amber">amber</span> / <span class="flag-red">red</span></td><td>Exception beyond threshold; within-threshold shows nothing</td></tr>
+    <tr><td><span class="note">gray 9pt</span></td><td>Guidance — de-emphasized</td></tr>
+  </table>
+
+  <h2>Data / Archive</h2>
+  <div class="row">
+    <button id="exportMd">Export Markdown</button>
+    <button id="exportJson">Backup JSON</button>
+    <button id="importJson">Restore JSON</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" style="display:none;">
+  <pre id="exportPre" style="display:none;"></pre>
+  <button id="downloadMd" style="display:none;">Download .md</button>
+
+  <h2>Change Log</h2>
+  <table class="zebra-tbl">
+    <tr><th>Rev</th><th>Date</th><th>Description</th></tr>
+    <tr><td>A</td><td>2026-07-20</td><td>MOD-01 initial build (spec-sheet theme)</td></tr>
+    <tr><td>B</td><td>2026-07-20</td><td>Converted to Style v3; icon library; KPI dashboard</td></tr>
+    <tr><td>C</td><td>2026-07-20</td><td>Git-backed vault sync (GitHub Contents API), pull-on-open, debounced push, dual JSON+markdown output</td></tr>
+  </table>
+</div>
+
+<!-- Icon picker -->
+<div class="picker" id="picker">
+  <div class="picker-box">
+    <h2 style="margin-top:0;">Select Symbol</h2>
+    <div class="glyph-grid" id="glyphGrid"></div>
+    <button class="mt" id="pickerClose">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ STORAGE ADAPTER ============ */
+const store = {
+  async get(key){
+    if (typeof window.storage !== 'undefined' && window.storage){
+      try { const r = await window.storage.get(key); return r ? r.value : null; } catch(e){ return null; }
+    }
+    try { return localStorage.getItem(key); } catch(e){ return null; }
+  },
+  async set(key, val){
+    if (typeof window.storage !== 'undefined' && window.storage){
+      try { await window.storage.set(key, val); return true; } catch(e){ return false; }
+    }
+    try { localStorage.setItem(key, val); return true; } catch(e){ return false; }
+  }
+};
+
+const KEY = 'lifeos:mod01';
+const GH_KEY = 'lifeos:ghconfig';   /* device-local only, never synced */
+const DAY_TYPES = ['Commute','WFH','Day Off'];
+const DEFAULT_GLYPHS = '○ ◐ ● □ ■ △ ▲ ▽ ◇ ◆ ✳ ⌂ ☕ ✉ ⚙ ✎';
+
+let state = {
+  updatedAt: null,
+  day: DAY_TYPES[0],
+  routines: {},
+  inbox: [],
+  review: {worked:'',adjust:'',focus:'',savedAt:null},
+  history: {},
+  glyphs: DEFAULT_GLYPHS
+};
+let gh = { repo:'', branch:'main', folder:'life-os', token:'' };
+let ghShas = { json:null, md:null };
+let pickerTarget = null;
+let pushTimer = null;
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function setSyncStatus(txt, cls){
+  const el=document.getElementById('syncStatus');
+  el.textContent=txt;
+  el.className='sync-dot '+(cls||'note');
+}
+function ghMsg(txt, cls){
+  const el=document.getElementById('ghMsg');
+  el.textContent=txt;
+  el.className='mt '+(cls||'note');
+}
+
+/* ============ GITHUB SYNC ============ */
+function ghReady(){ return gh.repo && gh.token; }
+function ghUrl(file){
+  const folder = gh.folder ? gh.folder.replace(/^\/+|\/+$/g,'')+'/' : '';
+  return `https://api.github.com/repos/${gh.repo}/contents/${folder}${file}`;
+}
+function ghHeaders(){
+  return {
+    'Authorization': 'Bearer '+gh.token,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+}
+/* UTF-8 safe base64 */
+function b64encode(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64decode(str){ return decodeURIComponent(escape(atob(str.replace(/\n/g,'')))); }
+
+async function ghGetFile(file){
+  const res = await fetch(ghUrl(file)+`?ref=${encodeURIComponent(gh.branch||'main')}`, {headers: ghHeaders()});
+  if (res.status === 404) return {exists:false};
+  if (!res.ok) throw new Error('GitHub read failed ('+res.status+')');
+  const data = await res.json();
+  return {exists:true, sha:data.sha, content: b64decode(data.content)};
+}
+
+async function ghPutFile(file, content, sha, message){
+  const body = { message, content: b64encode(content), branch: gh.branch||'main' };
+  if (sha) body.sha = sha;
+  const res = await fetch(ghUrl(file), {method:'PUT', headers: Object.assign({'Content-Type':'application/json'}, ghHeaders()), body: JSON.stringify(body)});
+  if (res.status === 409 || res.status === 422){
+    /* sha out of date — refetch and retry once */
+    const cur = await ghGetFile(file);
+    body.sha = cur.exists ? cur.sha : undefined;
+    const res2 = await fetch(ghUrl(file), {method:'PUT', headers: Object.assign({'Content-Type':'application/json'}, ghHeaders()), body: JSON.stringify(body)});
+    if (!res2.ok) throw new Error('GitHub write failed ('+res2.status+')');
+    return (await res2.json()).content.sha;
+  }
+  if (!res.ok) throw new Error('GitHub write failed ('+res.status+')');
+  return (await res.json()).content.sha;
+}
+
+async function ghPush(){
+  if (!ghReady()) return;
+  try{
+    setSyncStatus('syncing…');
+    state.updatedAt = new Date().toISOString();
+    ghShas.json = await ghPutFile('state.json', JSON.stringify(state,null,2), ghShas.json, 'life-os: state '+state.updatedAt);
+    ghShas.md   = await ghPutFile('basic-living.md', buildMd(), ghShas.md, 'life-os: markdown '+state.updatedAt);
+    setSyncStatus('synced '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}), 'ok-green');
+  }catch(e){
+    setSyncStatus('sync failed', 'flag-red');
+    ghMsg(e.message + ' — check token/repo. Data is safe locally.', 'flag-amber');
+  }
+}
+
+function schedulePush(){
+  if (!ghReady()) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(ghPush, 5000);
+}
+
+async function ghPull(interactive){
+  if (!ghReady()) return false;
+  try{
+    setSyncStatus('checking remote…');
+    const r = await ghGetFile('state.json');
+    if (!r.exists){
+      setSyncStatus('connected — no remote data yet', 'ok-green');
+      if (interactive) ghMsg('Repo reachable. No state file yet — it will be created on first sync.', 'ok-green');
+      return true;
+    }
+    ghShas.json = r.sha;
+    const remote = JSON.parse(r.content);
+    const remoteT = remote.updatedAt ? Date.parse(remote.updatedAt) : 0;
+    const localT  = state.updatedAt  ? Date.parse(state.updatedAt)  : 0;
+    if (remoteT > localT){
+      const glyphsKeep = null;
+      state = Object.assign(state, remote);
+      await store.set(KEY, JSON.stringify(state));
+      renderAll();
+      setSyncStatus('pulled remote (newer)', 'ok-green');
+      if (interactive) ghMsg('Remote was newer — loaded it.', 'ok-green');
+    } else {
+      setSyncStatus('connected — local is current', 'ok-green');
+      if (interactive) ghMsg('Local data is current or newer.', 'ok-green');
+    }
+    const m = await ghGetFile('basic-living.md');
+    ghShas.md = m.exists ? m.sha : null;
+    return true;
+  }catch(e){
+    setSyncStatus('sync failed', 'flag-red');
+    if (interactive) ghMsg(e.message, 'flag-amber');
+    return false;
+  }
+}
+
+async function loadGh(){
+  const raw = await store.get(GH_KEY);
+  if (raw){ try{ gh = Object.assign(gh, JSON.parse(raw)); }catch(e){} }
+  document.getElementById('ghRepo').value = gh.repo||'';
+  document.getElementById('ghBranch').value = gh.branch||'main';
+  document.getElementById('ghFolder').value = gh.folder||'life-os';
+  document.getElementById('ghToken').value = gh.token||'';
+}
+async function saveGh(){
+  gh.repo = document.getElementById('ghRepo').value.trim();
+  gh.branch = document.getElementById('ghBranch').value.trim()||'main';
+  gh.folder = document.getElementById('ghFolder').value.trim();
+  gh.token = document.getElementById('ghToken').value.trim();
+  await store.set(GH_KEY, JSON.stringify(gh));
+}
+
+/* ============ STATE ============ */
+async function load(){
+  const raw = await store.get(KEY);
+  if(raw){ try{ state = Object.assign(state, JSON.parse(raw)); }catch(e){} }
+  DAY_TYPES.forEach(d=>{ if(!state.routines[d]) state.routines[d]=[]; });
+  if(!state.glyphs) state.glyphs = DEFAULT_GLYPHS;
+  if(!state.history) state.history = {};
+}
+async function save(){
+  logToday();
+  state.updatedAt = new Date().toISOString();
+  const ok = await store.set(KEY, JSON.stringify(state));
+  if(!ok) toast('Save failed');
+  renderKpis();
+  schedulePush();
+}
+function logToday(){
+  const items = state.routines[state.day]||[];
+  if(items.length===0) return;
+  state.history[todayKey()] = {
+    done: items.filter(i=>i.done).length,
+    total: items.length,
+    day: state.day
+  };
+}
+
+/* ============ RENDER ============ */
+function renderDaySelect(){
+  const w=document.getElementById('daySelect'); w.innerHTML='';
+  DAY_TYPES.forEach(d=>{
+    const el=document.createElement('div');
+    el.className='dayopt'+(d===state.day?' sel':'');
+    el.textContent=d;
+    el.onclick=()=>{state.day=d;renderDaySelect();renderRoutine();save();};
+    w.appendChild(el);
+  });
+}
+function renderRoutine(){
+  const tb=document.getElementById('routineBody'); tb.innerHTML='';
+  const items=state.routines[state.day]||[];
+  if(items.length===0){
+    tb.innerHTML='<tr><td class="note" style="font-style:italic;">No items — add your '+esc(state.day)+' routine below.</td></tr>';
+    return;
+  }
+  items.forEach((it,i)=>{
+    const tr=document.createElement('tr');
+    if(it.done) tr.className='done';
+    tr.innerHTML=`<td style="padding-right:0;">
+      <div class="row">
+        <span class="check">${it.done?'■':'□'}</span>
+        <span class="item-icon">${esc(it.icon||'○')}</span>
+        <span class="item-text">${esc(it.text)}</span>
+        <span class="rm">✕</span>
+      </div></td>`;
+    tr.querySelector('.check').onclick=()=>{it.done=!it.done;renderRoutine();save();};
+    tr.querySelector('.item-icon').onclick=()=>openPicker(g=>{it.icon=g;renderRoutine();save();});
+    tr.querySelector('.rm').onclick=()=>{items.splice(i,1);renderRoutine();save();};
+    tb.appendChild(tr);
+  });
+}
+function renderInbox(){
+  const tb=document.getElementById('inboxBody'); tb.innerHTML='';
+  if(state.inbox.length===0){
+    tb.innerHTML='<tr><td class="note" style="font-style:italic;">Inbox empty.</td></tr>'; return;
+  }
+  state.inbox.forEach((it,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><div class="row"><span class="item-text">${esc(it.text)}</span><span class="rm">✕</span></div></td>`;
+    tr.querySelector('.rm').onclick=()=>{state.inbox.splice(i,1);renderInbox();save();};
+    tb.appendChild(tr);
+  });
+}
+function flag(el, level){
+  el.textContent = level==='R'?'R':level==='A'?'A':'';
+  el.className = 'num ' + (level==='R'?'flag-red':level==='A'?'flag-amber':'');
+}
+function renderKpis(){
+  document.getElementById('kpiDayLabel').textContent = state.day;
+  const items = state.routines[state.day]||[];
+  const pct = items.length ? Math.round(100*items.filter(i=>i.done).length/items.length) : null;
+  document.getElementById('kpiRoutine').textContent = pct===null ? '—' : pct+'%';
+  flag(document.getElementById('kpiRoutineFlag'), pct===null?null:(pct<50?'R':pct<80?'A':null));
+
+  const days=[]; for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}
+  const logs = days.map(k=>state.history[k]).filter(Boolean);
+  let avg=null;
+  if(logs.length){ avg = Math.round(100*logs.reduce((s,l)=>s+l.done/l.total,0)/logs.length); }
+  document.getElementById('kpiRoutine7').textContent = avg===null?'—':avg+'%';
+  flag(document.getElementById('kpiRoutine7Flag'), avg===null?null:(avg<50?'R':avg<80?'A':null));
+
+  const n=state.inbox.length;
+  document.getElementById('kpiInbox').textContent=n;
+  flag(document.getElementById('kpiInboxFlag'), n>20?'R':n>10?'A':null);
+
+  let dd=null;
+  if(state.review.savedAt){ dd=Math.floor((Date.now()-new Date(state.review.savedAt))/86400000); }
+  document.getElementById('kpiReview').textContent = dd===null?'never':dd;
+  flag(document.getElementById('kpiReviewFlag'), (dd===null||dd>14)?'R':dd>7?'A':null);
+
+  const head=document.getElementById('ledgerHead');
+  const row=document.getElementById('ledgerRow');
+  head.innerHTML='<th>Day</th>'; row.innerHTML='<td class="note">Completion</td>';
+  days.slice().reverse().forEach(k=>{
+    const th=document.createElement('th'); th.className='num';
+    th.textContent=k.slice(5).replace('-','/'); head.appendChild(th);
+    const td=document.createElement('td'); td.className='num';
+    const l=state.history[k];
+    td.textContent = !l ? '○' : (l.done===l.total ? '●' : l.done>0 ? '◐' : '○');
+    row.appendChild(td);
+  });
+}
+function renderAll(){
+  renderDaySelect(); renderRoutine(); renderInbox(); renderKpis();
+  document.getElementById('revWorked').value=state.review.worked||'';
+  document.getElementById('revAdjust').value=state.review.adjust||'';
+  document.getElementById('revFocus').value=state.review.focus||'';
+  document.getElementById('glyphLib').value=state.glyphs;
+}
+
+/* ============ ICON PICKER ============ */
+function openPicker(cb){
+  pickerTarget=cb;
+  const grid=document.getElementById('glyphGrid'); grid.innerHTML='';
+  state.glyphs.split(/\s+/).filter(Boolean).forEach(g=>{
+    const el=document.createElement('div'); el.className='glyph'; el.textContent=g;
+    el.onclick=()=>{document.getElementById('picker').classList.remove('show'); if(pickerTarget)pickerTarget(g);};
+    grid.appendChild(el);
+  });
+  document.getElementById('picker').classList.add('show');
+}
+
+/* ============ MARKDOWN ============ */
+function buildMd(){
+  const date=todayKey();
+  let md=`---\ntitle: Life OS — Basic Living\nupdated: ${state.updatedAt||date}\ntags: [life-os, mod-01]\nstyle: v3\n---\n\n# Basic Living\n\n> Auto-generated by Life OS. Edit in the app; this file is the vault-readable mirror.\n\n## Daily Routines\n\n`;
+  DAY_TYPES.forEach(d=>{
+    md+=`### ${d}\n`;
+    const items=state.routines[d]||[];
+    if(!items.length) md+='- _(none)_\n';
+    items.forEach(it=>{md+=`- [${it.done?'x':' '}] ${it.icon||'○'} ${it.text}\n`;});
+    md+='\n';
+  });
+  md+='## Inbox\n\n';
+  if(!state.inbox.length) md+='- _(empty)_\n';
+  state.inbox.forEach(it=>{md+=`- [ ] ${it.text}\n`;});
+  md+='\n## Weekly Review\n\n';
+  md+=`**What worked:**\n${state.review.worked||'_(blank)_'}\n\n**What to adjust:**\n${state.review.adjust||'_(blank)_'}\n\n**Focus next week:**\n${state.review.focus||'_(blank)_'}\n\n`;
+  md+='## Completion Log\n\n| Date | Day type | Done | Total |\n|---|---|---:|---:|\n';
+  Object.keys(state.history).sort().slice(-14).forEach(k=>{
+    const l=state.history[k]; md+=`| ${k} | ${l.day} | ${l.done} | ${l.total} |\n`;
+  });
+  return md;
+}
+
+/* ============ INIT ============ */
+function init(){
+  document.getElementById('hdrDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+  document.querySelectorAll('.zonetab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.zonetab').forEach(x=>x.classList.remove('sel'));
+      document.querySelectorAll('.zone').forEach(x=>x.classList.remove('show'));
+      t.classList.add('sel');
+      document.getElementById('zone-'+t.dataset.zone).classList.add('show');
+      if(t.dataset.zone==='read') renderKpis();
+    };
+  });
+
+  const rAdd=()=>{const i=document.getElementById('routineInput');const v=i.value.trim();if(!v)return;
+    state.routines[state.day].push({text:v,icon:'○',done:false});i.value='';renderRoutine();save();};
+  document.getElementById('routineAdd').onclick=rAdd;
+  document.getElementById('routineInput').onkeydown=e=>{if(e.key==='Enter')rAdd();};
+
+  const iAdd=()=>{const i=document.getElementById('inboxInput');const v=i.value.trim();if(!v)return;
+    state.inbox.push({text:v});i.value='';renderInbox();save();};
+  document.getElementById('inboxAdd').onclick=iAdd;
+  document.getElementById('inboxInput').onkeydown=e=>{if(e.key==='Enter')iAdd();};
+
+  document.getElementById('saveReview').onclick=()=>{
+    state.review.worked=document.getElementById('revWorked').value;
+    state.review.adjust=document.getElementById('revAdjust').value;
+    state.review.focus=document.getElementById('revFocus').value;
+    state.review.savedAt=new Date().toISOString();
+    save(); toast('Review saved');
+  };
+
+  document.getElementById('glyphSave').onclick=()=>{
+    state.glyphs=document.getElementById('glyphLib').value.trim()||DEFAULT_GLYPHS;
+    save(); toast('Library saved');
+  };
+  document.getElementById('pickerClose').onclick=()=>document.getElementById('picker').classList.remove('show');
+
+  /* GitHub controls */
+  document.getElementById('ghConnect').onclick=async()=>{
+    await saveGh();
+    if(!ghReady()){ ghMsg('Repo and token are required.', 'flag-amber'); return; }
+    const ok = await ghPull(true);
+    if (ok) toast('Connected');
+  };
+  document.getElementById('ghSync').onclick=async()=>{ await saveGh(); clearTimeout(pushTimer); await ghPush(); };
+  document.getElementById('ghPull').onclick=async()=>{ await saveGh(); await ghPull(true); };
+
+  document.getElementById('exportMd').onclick=()=>{
+    const pre=document.getElementById('exportPre');
+    pre.textContent=buildMd(); pre.style.display='block';
+    document.getElementById('downloadMd').style.display='inline-block';
+  };
+  document.getElementById('downloadMd').onclick=()=>{
+    const b=new Blob([buildMd()],{type:'text/markdown'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download=`life-os-mod01-${todayKey()}.md`;a.click();URL.revokeObjectURL(a.href);
+  };
+  document.getElementById('exportJson').onclick=()=>{
+    const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download=`life-os-backup-${todayKey()}.json`;a.click();URL.revokeObjectURL(a.href);
+  };
+  document.getElementById('importJson').onclick=()=>document.getElementById('importFile').click();
+  document.getElementById('importFile').onchange=e=>{
+    const f=e.target.files[0]; if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{try{state=Object.assign(state,JSON.parse(r.result));save();renderAll();toast('Restored');}
+      catch(err){toast('Invalid backup file');}};
+    r.readAsText(f);
+  };
+
+  renderAll();
+}
+
+(async()=>{
+  await load();
+  await loadGh();
+  init();
+  if (ghReady()) ghPull(false);   /* pull-on-open */
+})();
+</script>
+</body>
+</html>
